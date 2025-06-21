@@ -133,9 +133,24 @@ let maxFehler = 5;
       handleClick(touch.clientX - rect.left, touch.clientY - rect.top);
     });
 
-    startButton.addEventListener("click", startGame);
-startButton.addEventListener("touchstart", startGame);
+    
 function startGame() {
+  resetGame();
+  playing = true;
+  countdown = setInterval(() => {
+    time--;
+    timeEl.textContent = time;
+    if (time <= 0) {
+      clearInterval(countdown);
+      playing = false;
+      alert("Zeit vorbei! Du hast " + score + " Punkte.");
+    }
+  }, 1000);
+  requestAnimationFrame(updateGame);
+}
+startButton.addEventListener("click", startGame);
+startButton.addEventListener("touchstart", startGame);
+
       score = 0;
       time = 30;
   fehler = 0;
@@ -155,7 +170,18 @@ function startGame() {
         }
       }, 1000);
     });
-  </script>
+  
+function resetGame() {
+  flames = [];
+  score = 0;
+  fehler = 0;
+  time = 30;
+  scoreEl.textContent = score;
+  fehlerEl.textContent = fehler;
+  timeEl.textContent = time;
+}
+
+</script>
 </body>
 </html>
 
@@ -168,4 +194,15 @@ function startGame() {
       jumpSound.play();
     }
   }, { passive: false });
+
+function resetGame() {
+  flames = [];
+  score = 0;
+  fehler = 0;
+  time = 30;
+  scoreEl.textContent = score;
+  fehlerEl.textContent = fehler;
+  timeEl.textContent = time;
+}
+
 </script>
