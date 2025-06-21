@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Feuerfänger</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #000;
+      color: white;
+      text-align: center;
+    }
+    canvas {
+      background: linear-gradient(to top, #220000, #550000);
+      display: block;
+      margin: 20px auto;
+      border: 4px solid #ff9900;
+    }
+    #startButton {
+      font-size: 20px;
+      padding: 10px 20px;
+      background: #ff6600;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #info {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Feuerfänger 🔥</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <button id="startButton">Spiel starten</button>
+  <div id="info">
+  <span id="fehlerInfo"></span>
+    Punkte: <span id="score">0</span> | Zeit: <span id="time">30</span>s | Fehler: <span id="fehler">0</span>
+  </div>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const startButton = document.getElementById("startButton");
+const fehlerEl = document.getElementById("fehler");
+
+    let flames = [];
+    let score = 0;
+    let time = 30;
+  fehler = 0;
+  fehlerEl.textContent = fehler;
+    let playing = false;
+let fehler = 0;
+let maxFehler = 5;
+
+    const flameImage = new Image();
+    flameImage.src = "data:image/svg+xml;base64,CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNjQgNjQiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+CiAgPHBhdGggZmlsbD0iI2ZmMzMwMCIgZD0iTTMyIDJDMjIgMTQgMTIgMjQgMjAgMzhzMjQgMTIgMjggMC0xMC0yMC0xNi0zNnoiLz4KICA8cGF0aCBmaWxsPSIjZmY5OTAwIiBkPSJNMzIgMTBjLTYgMTAtMTIgMTgtNiAyNnMxNCA2IDE2IDAtNi0xMi0xMC0yNnoiLz4KPC9zdmc+Cg==";
+
+    function createFlame() {
+      return {
+        x: Math.random() * (canvas.width - 50),
+        y: canvas.height + 60,
+        size: 50 + Math.random() * 20,
+        speed: 1 + Math.random() * 1.5
+      };
+    }
+
+    function drawFlame(flame) {
+      ctx.drawImage(flameImage, flame.x, flame.y, flame.size, flame.size);
+    }
+
+    function updateGame() {
+      if (!playing) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      flames.forEach(f => {
+        f.y -= f.speed;
+        drawFlame(f);
+      });
+
+      flames = flames.filter(f => f.y + f.size > 0);
+
+      if (Math.random() < 0.03 && flames.length < 5) {
+        flames.push(createFlame());
+      }
+
+      
+      // Neue Bedingung: Fehler hinzufügen
+      flames = flames.filter(f => {
+        if (f.y + f.size < 0) {
+          fehler++;
+          fehlerEl.textContent = fehler;
+          if (fehler >= maxFehler) {
+            playing = false;
+            clearInterval(countdown);
+            alert("Zu viele Flammen verpasst! Du hast " + score + " Punkte.");
+          }
+          return false;
+        }
+        return true;
+      });
+      requestAnimationFrame(updateGame);
+
+    }
+
+    function handleClick(x, y) {
+      flames.forEach((f, i) => {
+        if (x >= f.x && x <= f.x + f.size && y >= f.y && y <= f.y + f.size) {
+          flames.splice(i, 1);
+          score++;
+          scoreEl.textContent = score;
+        }
+      });
+    }
+
+    canvas.addEventListener("click", (e) => {
+      if (!playing) return;
+      const rect = canvas.getBoundingClientRect();
+      handleClick(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+      if (!playing) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      handleClick(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+
+    startButton.addEventListener("click", () => {
+      score = 0;
+      time = 30;
+  fehler = 0;
+  fehlerEl.textContent = fehler;
+      scoreEl.textContent = score;
+      timeEl.textContent = time;
+      flames = [];
+      playing = true;
+      updateGame();
+      const countdown = setInterval(() => {
+        time--;
+        timeEl.textContent = time;
+        if (time <= 0) {
+          clearInterval(countdown);
+          playing = false;
+          alert("Zeit vorbei! Du hast " + score + " Flammen gefangen!");
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
