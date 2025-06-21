@@ -39,7 +39,8 @@
   <canvas id="gameCanvas" width="600" height="400"></canvas>
   <button id="startButton">Spiel starten</button>
   <div id="info">
-    Punkte: <span id="score">0</span> | Zeit: <span id="time">30</span>s
+  <span id="fehlerInfo"></span>
+    Punkte: <span id="score">0</span> | Zeit: <span id="time">30</span>s | Fehler: <span id="fehler">0</span>
   </div>
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -47,11 +48,16 @@
     const scoreEl = document.getElementById("score");
     const timeEl = document.getElementById("time");
     const startButton = document.getElementById("startButton");
+const fehlerEl = document.getElementById("fehler");
 
     let flames = [];
     let score = 0;
     let time = 30;
+  fehler = 0;
+  fehlerEl.textContent = fehler;
     let playing = false;
+let fehler = 0;
+let maxFehler = 5;
 
     const flameImage = new Image();
     flameImage.src = "data:image/svg+xml;base64,CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNjQgNjQiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+CiAgPHBhdGggZmlsbD0iI2ZmMzMwMCIgZD0iTTMyIDJDMjIgMTQgMTIgMjQgMjAgMzhzMjQgMTIgMjggMC0xMC0yMC0xNi0zNnoiLz4KICA8cGF0aCBmaWxsPSIjZmY5OTAwIiBkPSJNMzIgMTBjLTYgMTAtMTIgMTgtNiAyNnMxNCA2IDE2IDAtNi0xMi0xMC0yNnoiLz4KPC9zdmc+Cg==";
@@ -81,11 +87,27 @@
 
       flames = flames.filter(f => f.y + f.size > 0);
 
-      if (Math.random() < 0.06) {
+      if (Math.random() < 0.03) {
         flames.push(createFlame());
       }
 
+      
+      // Neue Bedingung: Fehler hinzufügen
+      flames = flames.filter(f => {
+        if (f.y + f.size < 0) {
+          fehler++;
+          fehlerEl.textContent = fehler;
+          if (fehler >= maxFehler) {
+            playing = false;
+            clearInterval(countdown);
+            alert("Zu viele Flammen verpasst! Du hast " + score + " Punkte.");
+          }
+          return false;
+        }
+        return true;
+      });
       requestAnimationFrame(updateGame);
+
     }
 
     function handleClick(x, y) {
@@ -114,6 +136,8 @@
     startButton.addEventListener("click", () => {
       score = 0;
       time = 30;
+  fehler = 0;
+  fehlerEl.textContent = fehler;
       scoreEl.textContent = score;
       timeEl.textContent = time;
       flames = [];
